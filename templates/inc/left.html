@@ -50,7 +50,7 @@
                         </li>
                         <!--转账-->
                         <li class="layui-nav-item">
-                            <a class="javascript:;" href="javascript:;" _href="home_add.html">
+                            <a class="javascript:;" href="/transfer/" _href="home_add.html">
                                 <i class="layui-icon" style="top: 3px;">&#xe613;</i><cite>转账</cite>
                             </a>
                         </li>
@@ -110,6 +110,8 @@
 	    </script>
 	    <script src="../../static/js/x-layui.js" charset="utf-8">
 	    </script>
+
+
 	    <script>
 	        layui.use(['form', 'layer'], function() {
 	            $ = layui.jquery;
@@ -133,7 +135,7 @@
 	
 	            console.log(parent);
 	            //监听提交
-	            form.on('submit(add)', function(data) {
+	   /*         form.on('submit(add)', function(data) {
 	                console.log(data);
 	                //发异步，把数据提交给php
 	                layer.alert("增加成功", {
@@ -145,9 +147,9 @@
 	                    parent.layer.close(index);
 	                });
 	                return false;
-	            });
+	            });         */
 	
 
 	        });
-	    </script>	
+	    </script>
 </html>

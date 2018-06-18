@@ -20,27 +20,33 @@ class Admins(models.Model):
 class CrashCard(models.Model):
    # id = models.AutoField(primary_key=True)
     user = models.ForeignKey(Users,on_delete=models.DO_NOTHING)
-    balance = models.DecimalField(max_digits=16, decimal_places=2, default=0)
+#    balance = models.DecimalField(max_digits=16, decimal_places=2, default=0)
+    balance = models.FloatField(default=0)
     time = models.DateTimeField(null=True)
     status = models.CharField(max_length=32, default="正常")
 
-class Tranfer(models.Model):
+class Transfer(models.Model):
    # id = models.AutoField(primary_key=True)
-    time = models.DateTimeField()
+    time = models.DateTimeField(default="1970-10-10 08:00:00")
     suser = models.ForeignKey(Users,on_delete=models.DO_NOTHING,related_name="sid")
     duser = models.ForeignKey(Users,on_delete=models.DO_NOTHING,related_name="did")
     scard = models.ForeignKey(CrashCard, on_delete=models.DO_NOTHING,related_name="scid")
     dcard = models.ForeignKey(CrashCard, on_delete=models.DO_NOTHING,related_name="dcid")
-    amount = models.DecimalField(max_digits=16,decimal_places=2)
-    scbalance = models.IntegerField()
-    dcbalance = models.IntegerField()
+  #  amount = models.DecimalField(max_digits=16,decimal_places=2)
+    amount = models.FloatField(default=0)
+   # scbalance = models.IntegerField()
+   # dcbalance = models.IntegerField()
+    scbalance = models.FloatField(default=0)
+    dcbalance = models.FloatField(default=0)
     remark = models.CharField(max_length=128,null=True,default="无")
 
 class DrawDeposit(models.Model):
    # id = models.AutoField(primary_key=True)
     card = models.ForeignKey(CrashCard, on_delete=models.DO_NOTHING)
-    amount = models.DecimalField(max_digits=16,decimal_places=2)
-    balance = models.DecimalField(max_digits=16,decimal_places=2)
+  #  amount = models.DecimalField(max_digits=16,decimal_places=2)
+    amount = models.FloatField(default=0)
+  #  balance = models.DecimalField(max_digits=16,decimal_places=2)
+    balance = models.FloatField(default=0)
     datafrom = models.CharField(max_length=64,null=True,default="自动取款机")
     time = models.DateTimeField()
 

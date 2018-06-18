@@ -27,7 +27,8 @@ urlpatterns = [
     path('edituserinf/', views.edituserinf),
     path('cardmanage/', views.cardmanage),
     path('cardmanage/showcardinsert/', views.showcardinsert),
-    path('addcard/', views.addcard)
+    path('addcard/', views.addcard),
+    path('transfer/',views.transfer)
   #  path('t1/', views.t1),
 #    path('t2/', views.t2)
 ]

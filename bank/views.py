@@ -1,5 +1,6 @@
 from django.shortcuts import render
 from django.shortcuts import HttpResponse
+from django.template import Template,Context
 from bank.models import *
 import datetime
 #from libsql.models import *
@@ -105,11 +106,12 @@ def cardmanage(request):
     if request.method=="GET":
      #   try:
         uid = request.session["id"]
-        tmp = CrashCard.objects.filter(user=Users.objects.get(id=uid))
-        print("test querynum ",len(tmp))
-        for line in tmp:
-            print(line.id)
-        return render(request,"cardmanage.html",{"inf":tmp})
+        tmp = CrashCard.objects.filter(user=Users.objects.get(id=uid)).values_list("id","time","balance","status")
+      #  list=[tmp[0],tmp[1]]
+      #  tmp = Context({"inf":CrashCard.objects.all()})
+      #  print(tmp[0].id,tmp, type(tmp))
+        print(locals())
+        return render(request,"cardmanage.html",locals())
       #  except:
        #     return render(request,"login.html")
     return render(request,"login.html")
@@ -139,6 +141,130 @@ def addcard(request):
        #     return render(request,"login.html")
     else:
         return render(request,"inf.html",{"inf":("非法登入！",)})
+
+def transfer(request):
+    if request.method== "GET":
+        try:
+            uid = request.session["id"]
+            tmp = CrashCard.objects.filter(user=Users.objects.get(id=uid)).\
+                values_list("id", "time", "balance","status")
+            print(locals())
+            return render(request, "transfer.html", locals())
+        except:
+            return render(request, "login.html")
+    if request.method== "POST":
+        try:
+            uid = request.session["id"]
+        except:
+            return render(request, "login.html")
+
+        uid = request.session["id"]
+        paypasswd_html = request.POST.get("paypasswd", None)
+        paypasswd_sql = Users.objects.get(id=uid).paypasswd
+        print("paypasswd：",paypasswd_html, paypasswd_sql)
+        if paypasswd_sql!=paypasswd_html:
+            return render(request, "inf.html", {"inf":("支付密码错误",)})
+            #return HttpResponse("支付密码错误！")
+   #     try:
+        scard = int(request.POST.get("scard", None))
+        dcard = int(request.POST.get("dcard", None))
+        amount = float(request.POST.get("amount", None))
+        time = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        scbalance = CrashCard.objects.get(id=scard).balance
+        dcbalance = CrashCard.objects.get(id=dcard).balance
+
+        if scbalance<amount:
+            return render(request, "inf.html", {"inf": "余额不足", })
+        print("error 01")
+
+        tmp1 = Transfer(time=time,
+                       scard=CrashCard.objects.get(id=scard),
+                       dcard=CrashCard.objects.get(id=dcard),
+                       suser=Users.objects.get(id=uid),
+                       duser=Users.objects.get(id=CrashCard.objects.get(id=dcard).user.id),
+                       amount=amount,
+                       scbalance=CrashCard.objects.get(id=scard).balance-amount,
+                       dcbalance=CrashCard.objects.get(id=dcard).balance+amount
+                       )
+        print("error 02")
+        CrashCard.objects.filter(id=scard).update(balance=scbalance-amount)
+        #tmp2[0].balance -= amount
+        CrashCard.objects.filter(id=dcard).update(balance=dcbalance+amount)
+        #tmp3[0].balance += amount
+        print("error 03")
+
+        tmp1.save()
+     #   tmp2[0].save()
+      #  tmp3[0].save()
+        print("error 04")
+    #    except:
+     #       return HttpResponse("转账出错，请检查卡号")
+        tmp = CrashCard.objects.filter(user=Users.objects.get(id=uid)).values_list("id", "time", "balance", "status")
+        return render(request, "cardmanage.html", locals())
+
+
+
+"""
+def transfer(requset):
+    if requset.method=="GET":
+        try:
+            uid = requset.session["id"]
+            tmp = CrashCard.objects.filter(user=Users.objects.get(id=uid)).\
+                values_list("id", "time", "balance","status")
+            print(locals())
+            return render(requset,"transfer.html",locals())
+        except:
+            return render(requset,"login.html")
+    if requset.method=="POST":
+        try:
+            uid = requset.session["id"]
+        except:
+            return render(requset,"login.html")
+
+        uid = requset.session["id"]
+        paypasswd_html = requset.POST.get("paypasswd",None)
+        paypasswd_sql = Users.objects.get(id=uid).paypasswd
+        print("paypasswd：",paypasswd_html, paypasswd_sql)
+        if paypasswd_sql!=paypasswd_html:
+            #return render(requset,"inf.html",{"inf":("支付密码错误",)})
+            return HttpResponse("支付密码错误！")
+   #     try:
+        scard = int(requset.POST.get("scard",None))
+        dcard = int(requset.POST.get("dcard", None))
+        amount = float(requset.POST.get("amount",None))
+        time = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        scbalance = CrashCard.objects.get(id=scard).balance
+        dcbalance = CrashCard.objects.get(id=dcard).balance
+
+        if scbalance<amount:
+            return HttpResponse("余额不足！")
+        print("error 01")
+
+        tmp1 = Transfer(
+                       scard=CrashCard.objects.get(id=scard),
+                       dcard=CrashCard.objects.get(id=dcard),
+                       suser=Users.objects.get(id=uid),
+                       duser=Users.objects.get(id=CrashCard.objects.get(id=dcard).user),
+                       amount=amount,
+                       scbalance=CrashCard.objects.get(id=scard).balance-amount,
+                       dcbalance=CrashCard.objects.get(id=dcard).balance+amount
+                       )
+        print("error 02")
+        tmp2 = CrashCard.objects.filter(id=scard)
+        tmp2[0].balance -= amount
+        tmp3 = CrashCard.objects.filter(id=dcard)
+        tmp3[0].balance += amount
+        print("error 03")
+
+        tmp1.save()
+        tmp2.save()
+        tmp3.save()
+        print("error 04")
+    #    except:
+     #       return HttpResponse("转账出错，请检查卡号")
+
+        return HttpResponse("支付密码错误 2")
+"""
 
 
 
