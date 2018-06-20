@@ -28,7 +28,9 @@ urlpatterns = [
     path('cardmanage/', views.cardmanage),
     path('cardmanage/showcardinsert/', views.showcardinsert),
     path('addcard/', views.addcard),
-    path('transfer/',views.transfer)
+    path('transfer/',views.transfer),
+    path('viewtransfer/', views.viewtransfer),
+    path('userdeposit/', views.userdeposit)
   #  path('t1/', views.t1),
 #    path('t2/', views.t2)
 ]

@@ -25,30 +25,13 @@
             <form class="layui-form" id="transfer_form"  onsubmit="return false">
 
         <!--    <form class="layui-form" id="transfer_form" action="/transfer/" method="post">  -->
-                <div class="layui-form-item">
-                    <label for="link" class="layui-form-label">
-                        <span class="x-red">*</span>本方卡号
-                    </label>
-                    <div class="layui-input-inline">
-                        <select lay-verify="required" name="scard">
-                                <option>
-                                </option>
-                                <optgroup label="选择卡号">
-                                    {% for line in card_list2 %}
-                                        <option value={{ line.id }}>{{ line.id }}</option>
-                                    {% endfor %}
-                                </optgroup>
-                        </select>
-                    </div>
-                </div>
-
 
                 <div class="layui-form-item">
                     <label for="link" class="layui-form-label">
-                        <span class="x-red">*</span>对方卡号
+                        <span class="x-red">*</span>存款卡号
                     </label>
                     <div class="layui-input-inline">
-                        <input type="text" id="link" name="dcard" required lay-verify="required"
+                        <input type="text" id="link" name="card" required lay-verify="required"
                         autocomplete="off" class="layui-input">
                     </div>
                 </div>
@@ -63,22 +46,13 @@
                     </div>
                 </div>
 
-                <div class="layui-form-item">
-                    <label for="desc" class="layui-form-label">
-                        <span class="x-red">*</span>验证
-                    </label>
-                    <div class="layui-input-inline">
-                        <input type="password" id="link" name="paypasswd" required lay-verify="required"
-                        autocomplete="off" class="layui-input">
-                    </div>
-                </div>
+
                 <div class="layui-form-item">
                     <label for="L_repass" class="layui-form-label">
                     </label>
                     <button  class="layui-btn" onclick="formAck()">
-                        确认转账
+                        确认存款
                     </button>
-                    <input class="layui-btn" type="submit" value="确认转账">
                 </div>
             </form>
         </div>
@@ -88,7 +62,7 @@
             function formAck() {
                 alert("success");
                 $.ajax({
-                    url:"/transfer/",
+                    url:"/userdeposit/",
                     type:"POST",
                     data: $('#transfer_form').serialize(),
                     success:function (data1) {

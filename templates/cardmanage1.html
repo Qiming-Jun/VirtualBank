@@ -46,26 +46,27 @@
                     </tr>
                 </thead>
                 <tbody id="x-img">
-                {% for line in card_list %}
+                {{ inf.0.id }}
+                {% for line in tmp %}
                     <tr>
                         <td>
                             <input type="checkbox" value="1" name="">
                         </td>
                         <td width="7%">
-                            {{ line.id }}
+                            {{ line.0 }}
                         </td>
                         <td align="center" width="7%">
                             <img src="images/card1.jpg" alt="" width="86" height="56">
                         </td>
                         <td >
-                            {{ line.time }}
+                            {{ line.1 }}
                         </td>
                         <td >
-                            {{ line.balance }}
+                            {{ line.2 }}
                         </td>
                         <td class="td-status">
                             <span class="layui-btn layui-btn-normal layui-btn-mini">
-                                {{ line.status }}
+                                {{ line.3 }}
                             </span>
                         </td>
                         <td class="td-manage">
