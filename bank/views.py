@@ -6,6 +6,12 @@ import pymysql as MySQLdb
 import datetime
 import rsa
 import os
+
+from Crypto.PublicKey import RSA
+from Crypto.Cipher import PKCS1_OAEP
+import base64
+from Crypto.Hash import SHA
+from Crypto import Random
 #from libsql.models import *
 # Create your views here.
 
@@ -14,6 +20,17 @@ def sqlconnect():
   #  cursor = db.cursor()
     return db
 
+def DecodeDecrypt(ciphertext):
+    file_path = os.path.abspath(__file__)
+    file_path = "\\".join(file_path.split("\\")[:-1])
+
+    private_path = open(file_path+"\\public.pem", 'r').read()
+    private_key = RSA.import_key(private_path)
+
+    text_decode = base64.b64decode(ciphertext)
+
+    cipher_rsa_decrypt = PKCS1_OAEP.new(private_key)
+    return cipher_rsa_decrypt.decrypt(text_decode)
 
 def login_html(request):
     file_path = os.path.abspath(__file__)
@@ -31,6 +48,9 @@ def login_html(request):
     return render(request, "login.html")
 
 def login(request):
+    if request.method=="GET":
+        return render(request,"login.html")
+
     if request.method=="POST":
         id = int(request.POST.get("id", None))
         passwd = request.POST.get("passwd", None)
@@ -92,8 +112,10 @@ def signup(request):
                          upasswd=passwd,paypasswd=paypasswd,time=time)
         user_inf.save()
 
-        print("id, name ", id, name)
-        return render(request, "login.html")
+        print("id, name ", user_inf.id, name)
+       # return render(request, "login.html")
+        inf = "注册成功，id为 "+str(user_inf.id)
+        return HttpResponse(inf)
 
 def edituserinf(request):
     if request.method=="GET":

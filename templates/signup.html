@@ -1,3 +1,4 @@
+{% include "./inc/cert.html" %}
 <!DOCTYPE html>
 <html>
 
@@ -24,8 +25,11 @@
             {% include "./inc/left.html" %}
             <div class="layui-tab layui-tab-card site-demo-title x-main" lay-filter="x-tab" lay-allowclose="true"
                 style="padding: 3% 0% 0% 3%">
-            <form class="layui-form layui-form-pane" action="/signup/" method="POST" name="myform"
-                  onsubmit="return checkForm()">
+
+        <!--    <form class="layui-form layui-form-pane" action="/signup/" method="POST" name="myform"
+                  onsubmit="return checkForm()">    -->
+                <form class="layui-form layui-form-pane" id="transfer_form" name="myform" onsubmit="return false">
+
                 <div class="layui-form-item">
                     <label for="L_title" class="layui-form-label">
                         姓名
@@ -72,11 +76,33 @@
                     <div class="layui-form-item">
                         <input class="layui-btn" type="submit" value="提交注册">
                     </div>
+                    <div class="layui-form-item">
+                        <button class="layui-btn" onclick="formAck()">
+                            提交注册b
+                        </button>
+                    </div>
                 </div>
             </form>
             </div>
         </div>
 
+        <script>
+            function formAck() {
+                alert("success");
+                $.ajax({
+                    url:"/signup/",
+                    type:"POST",
+                    data: $('#transfer_form').serialize(),
+                    success:function (data1) {
+                        alert(data1)
+                        window.location.href="/login/"
+                    }
+                })
+                alter("success  2")
+            }
+
+        </script>
+<!--
       <script>
           function checkForm()
             {
@@ -87,7 +113,7 @@
                 return false;
               }
             }
-      </script>
+      </script> -->
 <!--
         <script src="../static/lib/layui/layui.js" charset="utf-8">
         </script>
