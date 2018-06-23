@@ -30,7 +30,9 @@ urlpatterns = [
     path('addcard/', views.addcard),
     path('transfer/',views.transfer),
     path('viewtransfer/', views.viewtransfer),
-    path('userdeposit/', views.userdeposit)
+    path('userdeposit/', views.userdeposit),
+    path('userdraw/', views.userdraw),
+    path('viewdrawdeposit/', views.viewdrawdeposit)
   #  path('t1/', views.t1),
 #    path('t2/', views.t2)
 ]

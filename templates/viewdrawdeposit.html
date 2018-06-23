@@ -18,7 +18,7 @@
             {% include "./inc/header.html" %}
             {% include "./inc/left.html" %}
             <div class="layui-tab layui-tab-card site-demo-title x-main" lay-filter="x-tab" lay-allowclose="true">
-            <div class="layui-tab-content site-demo site-demo-body">
+            <div class="layui-tab-content site-demo site-demo-body"               >
             <table class="layui-table">
                 <thead>
                     <tr>
@@ -26,34 +26,32 @@
                             <input type="checkbox" name="" value="">
                         </th>
                         <th>流水号</th>
-                        <th>转账来源</th>
-                        <th>源卡号</th>
-                        <th>目的卡号</th>
+                        <th>卡号</th>
                         <th>金额</th>
+                        <th>本次余额</th>
+                        <th>存款/取款</th>
+                        <th>来源</th>
                         <th>时间</th>
                         <th>操作</th>
                     </tr>
                 </thead>
                 <tbody id="x-link">
-                {% for line in transfer_list %}
+                {% for line in drawdeposit_list %}
                     <tr>
                         <td>
                             <input type="checkbox" value="1" name="">
                         </td>
                         <td>{{ line.0 }}</td>
                         <td>{{ line.1 }}</td>
-                        {% if line.6 == line.7 %}
-                            <td bgcolor="#ffd700">{{ line.2 }}</td>
+                        <td>{{ line.2 }}</td>
+                        <td>{{ line.3 }}</td>
+                        {% if line.4 == "存款" %}
+                            <td bgcolor="#ffd700">{{ line.4 }}</td>
                         {% else %}
-                            <td>{{ line.2 }}</td>
+                            <td bgcolor="#deb887">{{ line.4 }}</td>
                         {% endif %}
-                        {% if line.6 != line.7 %}
-                            <td bgcolor="#ffd700">{{ line.3 }}</td>
-                        {% else %}
-                            <td>{{ line.3 }}</td>
-                        {% endif %}
-                        <td>{{ line.4 }}</td>
                         <td>{{ line.5 }}</td>
+                        <td>{{ line.6 }}</td>
                         <td class="td-manage">
                             <a title="处理" href="javascript:;" onclick="data_management_look('查看','data_management_look.html','4','','510')"
                             class="ml-5" style="text-decoration:none">
@@ -76,7 +74,6 @@
             </div>
             </div>
         </div>
-        <div id="page"></div>
         <br /><br /><br />
         <script src="../static/lib/layui/layui.js" charset="utf-8"></script>
         <script src="../static/js/x-layui.js" charset="utf-8"></script>

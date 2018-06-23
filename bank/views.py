@@ -6,31 +6,7 @@ import pymysql as MySQLdb
 import datetime
 import rsa
 import os
-
-from Crypto.PublicKey import RSA
-from Crypto.Cipher import PKCS1_OAEP
-import base64
-from Crypto.Hash import SHA
-from Crypto import Random
-#from libsql.models import *
-# Create your views here.
-
-def sqlconnect():
-    db = MySQLdb.connect('localhost', 'root', '', 'bankdb', charset='utf8')
-  #  cursor = db.cursor()
-    return db
-
-def DecodeDecrypt(ciphertext):
-    file_path = os.path.abspath(__file__)
-    file_path = "\\".join(file_path.split("\\")[:-1])
-
-    private_path = open(file_path+"\\public.pem", 'r').read()
-    private_key = RSA.import_key(private_path)
-
-    text_decode = base64.b64decode(ciphertext)
-
-    cipher_rsa_decrypt = PKCS1_OAEP.new(private_key)
-    return cipher_rsa_decrypt.decrypt(text_decode)
+import bank.tools as tools
 
 def login_html(request):
     file_path = os.path.abspath(__file__)
@@ -47,6 +23,7 @@ def login_html(request):
     print("mmmmmmmmmmm: ", rsa.decrypt(cry,privkey))
     return render(request, "login.html")
 
+"""
 def login(request):
     if request.method=="GET":
         return render(request,"login.html")
@@ -70,16 +47,30 @@ def login(request):
                 return render(request,"user_inf_show.html", {"inf":tmp})
         except:
             print("密码错误或用户名不存在")
+        return render(request, "login.html")    """
+
+def login(request):
+    if request.method=="GET":
         return render(request, "login.html")
 
-       # if passwd_db:
-       #     if passwd_db==passwd:
-       #         request.session['id'] = id
-       #         request.session['name'] =
+    if request.method=="POST":
+        id = int(tools.DecodeDecrypt(request.POST.get("id", None)).decode())
+        passwd = tools.DecodeDecrypt(request.POST.get("passwd", None)).decode()
+        print(type(id), id, type(passwd), passwd)
 
+        try:
+            tmp = Users.objects.get(id=id)
+            print(type(passwd), type(tmp.upasswd))
+            if tmp.upasswd==passwd:
+                print("success!")
+                request.session['id'] = id
+                request.session['name'] = tmp.uname
 
-    #    print("uid ", uid)
-     #   return render(request, "login.html")
+                return HttpResponse("success")
+        except:
+            return HttpResponse("密码错误或用户名不存在!")
+            print("密码错误或用户名不存在!")
+        return render(request, "login.html",)
 
 def logout(request):
     if request.method=="GET":
@@ -94,7 +85,7 @@ def viewuserinf(request):
             return render(request,"user_inf_show.html",{"inf":tmp})
         except:
             print("登陆状态出错，请重新登陆")
-    return render(request,"login.html")
+    return render(request, "login.html")
 
 def signup(request):
     if request.method=="GET":
@@ -127,7 +118,7 @@ def edituserinf(request):
                 return render(request,"user_inf_edit.html",{"inf":tmp})
             except:
                 print("登陆状态出错，请重新登陆")
-        return render(request,"login.html")
+        return render(request, "login.html")
     if request.method=="POST":
         try:
             id_session = request.session["id"]
@@ -143,7 +134,7 @@ def edituserinf(request):
 
         except:
             print("error 1: 登陆状态出错，请重新登陆")
-    return render(request,"login.html")
+    return render(request, "login.html")
 
 def cardmanage(request):
     if request.method=="GET":
@@ -153,8 +144,8 @@ def cardmanage(request):
         print(tmp)
         return render(request,"cardmanage.html",{"card_list":tmp})
       #  except:
-       #     return render(request,"login.html")
-    return render(request,"login.html")
+       #     return render(request, "login.html")
+    return render(request, "login.html")
 
 
 def cardmanage1(request):
@@ -168,8 +159,8 @@ def cardmanage1(request):
         print(locals())
         return render(request,"cardmanage1.html",locals())
       #  except:
-       #     return render(request,"login.html")
-    return render(request,"login.html")
+       #     return render(request, "login.html")
+    return render(request, "login.html")
 
 def showcardinsert(request):
     if request.method=="GET":
@@ -177,28 +168,29 @@ def showcardinsert(request):
 
 def addcard(request):
     if request.method=="POST":
-     #   try:
-        id_session = int(request.session["id"])
-        paypasswd_sql = Users.objects.get(id=id_session).paypasswd
-        paypasswd_html = request.POST.get("paypasswd")
+        try:
+            id_session = int(request.session["id"])
+            paypasswd_sql = Users.objects.get(id=id_session).paypasswd
+            print(request.POST.get("paypasswd"))
+            paypasswd_html = tools.DecodeDecrypt(request.POST.get("paypasswd")).decode()
 
-        if paypasswd_html==paypasswd_sql:
-            time = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-            tmp = CrashCard(user=Users.objects.get(id=id_session),time=time)
-            tmp.save()
+            if paypasswd_html==paypasswd_sql:
+                time = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+                tmp = CrashCard(user=Users.objects.get(id=id_session),time=time)
+                tmp.save()
 
-            inf = "添加成功，卡号为" + str(tmp.id)
-            return render(request,"addcard_success.html",{"inf":(inf,)})
-        else:
-            inf = "支付密码验证失败"
-            return render(request,"addcard_success.html",{"inf":(inf,)})
-      #  except:
-       #     return render(request,"login.html")
+                inf = "添加成功，卡号为" + str(tmp.id)
+                return HttpResponse([1,inf])
+            else:
+                inf = "支付密码验证失败"
+                return HttpResponse([0,inf])
+        except:
+            return HttpResponse([2,"0"])
     else:
         return render(request,"inf.html",{"inf":("非法登入！",)})
 
 
-def transfer(request):
+def transfer1(request):
     if request.method== "GET":
         try:
             uid = request.session["id"]
@@ -277,16 +269,16 @@ def transfer(request):
             return render(request, "login.html")
 
         uid = request.session["id"]
-        paypasswd_html = request.POST.get("paypasswd", None)
+        paypasswd_html = tools.DecodeDecrypt(request.POST.get("paypasswd", None)).decode()
         paypasswd_sql = Users.objects.get(id=uid).paypasswd
         print("paypasswd：", paypasswd_html, paypasswd_sql)
         if paypasswd_sql!=paypasswd_html:
             #return render(requset,"inf.html",{"inf":("支付密码错误",)})
             return HttpResponse("支付密码错误！")
         try:
-            scard = int(request.POST.get("scard", None))
-            dcard = int(request.POST.get("dcard", None))
-            amount = float(request.POST.get("amount", None))
+            scard = int(tools.DecodeDecrypt(request.POST.get("scard", None)))
+            dcard = int(tools.DecodeDecrypt(request.POST.get("dcard", None)))
+            amount = float(tools.DecodeDecrypt(request.POST.get("amount", None)))
             time = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
             scbalance = CrashCard.objects.get(id=scard).balance
             dcbalance = CrashCard.objects.get(id=dcard).balance
@@ -318,16 +310,16 @@ def transfer(request):
         except:
             return HttpResponse("转账出错，请检查卡号")
 
-        return HttpResponse("转账成功！")
+        return HttpResponse("success")
 
 def viewtransfer(request):
     if request.method=="GET":
         try:
             uid = request.session["id"]
         except:
-            return render(request,"login.html")
+            return render(request, "login.html")
         uid = request.session["id"]
-        db = sqlconnect()
+        db = tools.sqlconnect()
        # db = db_tmp[0]
         cursor = db.cursor()
         sql = """select bank_transfer.id,uname,scard_id,dcard_id,amount,bank_transfer.time,
@@ -336,7 +328,8 @@ def viewtransfer(request):
         where bank_users.id=bank_crashcard.user_id
           and bank_users.id=%d
           and (bank_transfer.scard_id=bank_crashcard.id 
-            or bank_transfer.dcard_id=bank_crashcard.id)"""%(uid)
+            or bank_transfer.dcard_id=bank_crashcard.id)
+        group by bank_transfer.id"""%(uid)
         cursor.execute(sql)
         tmp = cursor.fetchall()
 
@@ -347,14 +340,14 @@ def userdeposit(request):
         try:
             uid = request.session["id"]
         except:
-            return render(request,"login.html")
+            return render(request, "login.html")
         return render(request,"userdeposit.html")
 
     elif request.method=="POST":
         try:
             uid = request.session["id"]
         except:
-            return render(request,"login.html")
+            return render(request, "login.html")
         uid = request.session["id"]
       #  try:
         card = int(request.POST.get("card",None))
@@ -372,7 +365,75 @@ def userdeposit(request):
         return HttpResponse("操作成功")
  #   except:
       #      return HttpResponse("存款错误，请检查卡号或金额")
-    return render(request,"login.html")
+    return render(request, "login.html")
+
+def userdraw(request):
+    if request.method=="GET":
+        try:
+            uid = request.session["id"]
+            tmp = CrashCard.objects.filter(user=Users.objects.get(id=uid))
+            return render(request, "userdraw.html", {"card_list3":tmp})
+        except:
+            return render(request, "login.html")
+
+    elif request.method=="POST":
+        try:
+            uid = request.session["id"]
+        except:
+            return render(request, "login.html")
+        uid = request.session["id"]
+
+        print(request.POST.get("paypasswd", None))
+        paypasswd_html = tools.DecodeDecrypt(request.POST.get("paypasswd", None)).decode()
+        paypasswd_sql = Users.objects.get(id=uid).paypasswd
+        print("paypasswd：", paypasswd_html, paypasswd_sql)
+        if paypasswd_sql != paypasswd_html:
+            return HttpResponse("支付密码错误")
+
+        card = int(tools.DecodeDecrypt(request.POST.get("card", None)))
+        amount = float(tools.DecodeDecrypt(request.POST.get("amount", None)))
+
+        time = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        new_balance = CrashCard.objects.get(id=card).balance - amount
+
+        if uid != CrashCard.objects.get(id=card).user_id:
+            return HttpResponse("您没有这张银行卡")
+        if new_balance < 0:
+            return HttpResponse("余额不足，无法取款")
+
+        tmp = DrawDeposit(card=CrashCard.objects.get(id=card),
+                          amount=amount,
+                          type="取款",
+                          balance=new_balance,
+                          time=time
+                          )
+        tmp.save()
+        CrashCard.objects.filter(id=card).update(balance=new_balance)
+        return HttpResponse("success")
+    return render(request, "login.html")
+
+def viewdrawdeposit(request):
+    if request.method=="GET":
+        try:
+            uid = request.session["id"]
+        except:
+            return render(request, "login.html")
+        uid = request.session["id"]
+        db = tools.sqlconnect()
+        cursor = db.cursor()
+        sql = """select bank_drawdeposit.id,card_id,amount,bank_drawdeposit.balance,
+              type,datafrom,bank_drawdeposit.time
+        from bank_users,bank_crashcard,bank_drawdeposit
+        where bank_users.id=bank_crashcard.user_id
+          and bank_users.id=%d
+          and bank_drawdeposit.card_id=bank_crashcard.id"""%(uid)
+        cursor.execute(sql)
+        tmp = cursor.fetchall()
+
+        return render(request,"viewdrawdeposit.html",{"drawdeposit_list":tmp})
+    else:
+        return render(request, "login.html")
+
 
 
 

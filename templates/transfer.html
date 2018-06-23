@@ -31,7 +31,7 @@
                         <span class="x-red">*</span>本方卡号
                     </label>
                     <div class="layui-input-inline">
-                        <select lay-verify="required" name="scard">
+                        <select lay-verify="required" id="scard" name="scard">
                                 <option>
                                 </option>
                                 <optgroup label="选择卡号">
@@ -49,7 +49,7 @@
                         <span class="x-red">*</span>对方卡号
                     </label>
                     <div class="layui-input-inline">
-                        <input type="text" id="link" name="dcard" required lay-verify="required"
+                        <input type="text" id="dcard" name="dcard" required lay-verify="required"
                         autocomplete="off" class="layui-input">
                     </div>
                 </div>
@@ -59,7 +59,7 @@
                         <span class="x-red">*</span>转账金额
                     </label>
                     <div class="layui-input-inline">
-                        <input type="text" id="link" name="amount" required lay-verify="required"
+                        <input type="text" id="amount" name="amount" required lay-verify="required"
                         autocomplete="off" class="layui-input">
                     </div>
                 </div>
@@ -69,7 +69,7 @@
                         <span class="x-red">*</span>验证
                     </label>
                     <div class="layui-input-inline">
-                        <input type="password" id="link" name="paypasswd" required lay-verify="required"
+                        <input type="password" id="paypasswd" name="paypasswd" required lay-verify="required"
                         autocomplete="off" class="layui-input">
                     </div>
                 </div>
@@ -85,19 +85,37 @@
         </div>
         </div>
     </div>
+        <script src="../static/jiawe_js/jsencrypt.js"></script>
         <script>
             function formAck() {
                 alert("success");
+                var cert=document.getElementById("cert").value;
+                var certInfo=JSON.parse(cert).info.certInfo
+                var pubKey=JSON.parse(certInfo).PublicKey
+
+                var encrypt = new JSEncrypt();
+                encrypt.setPublicKey(pubKey);
+
+                var data={
+                    id:encrypt.encrypt($('#id').val(), true),
+                    scard:encrypt.encrypt($('#scard').val(), true),
+                    dcard:encrypt.encrypt($('#dcard').val(), true),
+                    amount:encrypt.encrypt($('#amount').val(), true),
+                    paypasswd:encrypt.encrypt($('#paypasswd').val(), true)
+                };
                 $.ajax({
                     url:"/transfer/",
                     type:"POST",
-                    data: $('#transfer_form').serialize(),
+                    data: data,
                     success:function (data1) {
-                        alert(data1)
-                        window.location.href="/viewuserinf/"
+                       if(data1=="success"){
+                            window.location.href="/viewtransfer/"
+                       }else{
+                           alert(data1)
+                           window.location.href="/transfer/"
+                       }
                     }
                 })
-                alter("success  2")
             }
 
         </script>

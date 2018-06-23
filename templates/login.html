@@ -10,6 +10,7 @@
 		<title>登录</title>
 		<link rel="stylesheet" href="../static/lib/layui/css/layui.css" media="all" />
 		<link rel="stylesheet" href="../static/css/login.css" />
+
 	</head>
 
 	<body class="beg-login-bg" background="../static/images/bg.jpg">
@@ -18,7 +19,7 @@
 				<h1>欢迎登录</h1>
 			</header>
 			<div class="beg-login-main">
-				<form action="/login/" class="layui-form" method="post">
+				<form class="layui-form" id="transfer_form" onsubmit="return false">
                 <!---->
                 <div class="layui-form-item">
 						<label class="beg-login-icon">
@@ -35,13 +36,13 @@
 						<label class="beg-login-icon">
                         <i class="layui-icon">&#xe612;</i>
                     </label>
-						<input type="text" name="id" lay-verify="userName" autocomplete="off" placeholder="请输入登录名" class="layui-input">
+						<input id="id" type="text" name="id" lay-verify="userName" autocomplete="off" placeholder="请输入登录名" class="layui-input">
 					</div>
 					<div class="layui-form-item">
 						<label class="beg-login-icon">
                         <i class="layui-icon">&#xe642;</i>
                     </label>
-						<input type="password" name="passwd" lay-verify="password" autocomplete="off" placeholder="请输入密码" class="layui-input">
+						<input id="passwd" type="password" name="passwd" lay-verify="password" autocomplete="off" placeholder="请输入密码" class="layui-input">
 					</div>
 					<div class="layui-form-item">
 						<div class="beg-pull-left beg-login-remember">
@@ -50,6 +51,9 @@
 						</div>
 						<div class="beg-pull-right">
 							<input type="submit" name="submit2" value="登 录 " class="layui-btn layui-btn-primary" />
+                            <button class="layui-btn layui-btn-primary" onclick="loginAck()">
+                                登陆
+                            </button>
 						</div>
 						<div class="beg-clear"></div>
 					</div>
@@ -65,6 +69,45 @@
 			</footer>
             
 		</div>
+        <script src="../static/lib/layui/layui.js" charset="utf-8"></script>
+        <script src="../static/js/x-admin.js"></script>
+        <script src="../static/jiawe_js/jsencrypt.js"></script>
+  <!--      <script src="../static/jquery/jquery-3.3.1.min.js"></script>    -->
+
+        <script>
+            function loginAck() {
+                alert("success");
+                var cert=document.getElementById("cert").value;
+                var certInfo=JSON.parse(cert).info.certInfo
+                var pubKey=JSON.parse(certInfo).PublicKey
+
+                var encrypt = new JSEncrypt();
+                encrypt.setPublicKey(pubKey);
+
+                var data={
+                    id:encrypt.encrypt($('#id').val(), true),
+                    passwd:encrypt.encrypt($('#passwd').val(), true)
+                };
+
+                $.ajax({
+                    url:"/login/",
+                    type:"POST",
+                    data: data,
+                    success:function (data1) {
+                        if(data1=="success"){
+                            window.location.href="/viewuserinf/"
+                        }else{
+                            alert(data1)
+                            window.location.href="/login/"
+                        }
+
+                    }
+                })
+             //   alert("success  2")
+            }
+        </script>
+
+        <!--
 		<script type="text/javascript" src="lib/layui/layui.js"></script>
 		<script>
 			layui.use(['layer', 'form'], function() {
@@ -78,7 +121,7 @@
 					return false;
 				});
 			});
-		</script>
+		</script>       -->
 
     </body>
 

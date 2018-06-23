@@ -48,6 +48,6 @@ class DrawDeposit(models.Model):
   #  balance = models.DecimalField(max_digits=16,decimal_places=2)
     type = models.CharField(max_length=32,default="存款")
     balance = models.FloatField(default=0)
-    datafrom = models.CharField(max_length=64,null=True,default="自动取款机")
+    datafrom = models.CharField(max_length=64,null=True,default="自动存取款机")
     time = models.DateTimeField()
 
