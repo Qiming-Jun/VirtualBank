@@ -51,7 +51,7 @@
             </form>
             </div>
         </div>
-
+<a id="jump_mall" href="http://www.baidu.com/"></a>
       <script src="../static/jiawe_js/jsencrypt.js"></script>
         <script>
             function checkForm() {
@@ -77,6 +77,12 @@
                             window.location.href="/viewuserinf/"
                        }else if(data1=="login"){
                            window.location.href="/login/"
+                       }else if(data1=="test"){
+                         //  console.log($("#jump_mall")
+                         //  $("#jump_mall").click()
+                           var e = document.createEvent("MouseEvents");
+                           e.initEvent("click", true, true);
+                           document.getElementById("jump_mall").dispatchEvent(e);
                        }
                        else{
                            alert(data1)

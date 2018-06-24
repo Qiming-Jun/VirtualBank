@@ -19,50 +19,66 @@
     <body>
     <div class="layui-layout layui-layout-admin">
         {% include "./inc/header.html" %}
-        {% include "./inc/left.html" %}
+        {% include "./inc/left_mall.html" %}
         <div class="layui-tab layui-tab-card site-demo-title x-main" lay-filter="x-tab" lay-allowclose="true">
         <div class="x-body">
 
             <form class="layui-form" id="transfer_form"  onsubmit="return false">
 
         <!--    <form class="layui-form" id="transfer_form" action="/transfer/" method="post">  -->
-
                 <div class="layui-form-item">
                     <label for="link" class="layui-form-label">
-                        <span class="x-red">*</span>存款卡号
+                        <span class="x-red">*</span>选择银行卡
                     </label>
                     <div class="layui-input-inline">
-                        <input type="text" id="card" name="card" required lay-verify="required"
+                        <select lay-verify="required" id="card" name="card">
+                                <option>
+                                </option>
+                                <optgroup label="选择银行卡">
+                                    {% for line in mall_card_list %}
+                                        <option value={{ line.id }}>{{ line.id }}</option>
+                                    {% endfor %}
+                                </optgroup>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="layui-form-item">
+                    <label for="desc" class="layui-form-label">
+                        <span class="x-red">*</span>付款金额
+                    </label>
+                    <div class="layui-input-inline">
+                        <input type="text" value="{{ mall_amount }}" readonly required lay-verify="required"
                         autocomplete="off" class="layui-input">
                     </div>
                 </div>
 
                 <div class="layui-form-item">
-                    <label for="link" class="layui-form-label">
-                        <span class="x-red">*</span>转账金额
+                    <label for="desc" class="layui-form-label">
+                        <span class="x-red">*</span>支付密码
                     </label>
                     <div class="layui-input-inline">
-                        <input type="text" id="amount" name="amount" required lay-verify="required"
+                        <input type="password" id="paypasswd" name="paypasswd" required lay-verify="required"
                         autocomplete="off" class="layui-input">
                     </div>
                 </div>
-
 
                 <div class="layui-form-item">
                     <label for="L_repass" class="layui-form-label">
                     </label>
                     <button  class="layui-btn" onclick="formAck()">
-                        确认存款
+                        确认支付
                     </button>
                 </div>
             </form>
         </div>
         </div>
+    <a id="jump_mall" href="http://www.baidu.com/"></a>
     </div>
         <script src="../static/jiawe_js/jsencrypt.js"></script>
         <script>
             function formAck() {
-             //   alert("success");
+                alert("success");
                 var cert=document.getElementById("cert").value;
                 var certInfo=JSON.parse(cert).info.certInfo
                 var pubKey=JSON.parse(certInfo).PublicKey
@@ -71,24 +87,29 @@
                 encrypt.setPublicKey(pubKey);
 
                 var data={
-                    amount:encrypt.encrypt($('#amount').val(), true),
-                    card:encrypt.encrypt($('#card').val(), true)
+                    card:encrypt.encrypt($('#card').val(), true),
+                    paypasswd:encrypt.encrypt($('#paypasswd').val(), true)
                 };
                 $.ajax({
-                    url:"/userdeposit/",
+                    url:"/mall_pay/",
                     type:"POST",
                     data: data,
                     success:function (data1) {
-                        if(data1=="success"){
-                            alert("存款成功！")
-                            window.location.href="/cardmanage/"
-                        }else{
-                            alert(data1)
-                            window.location.href="/userdeposit/"
-                        }
+                       if(data1=="success"){
+                           var e = document.createEvent("MouseEvents");
+                           e.initEvent("click", true, true);
+                           document.getElementById("jump_mall").dispatchEvent(e);
+                       }else if(data1=="amount_error"){
+                           alert("余额不足")
+                      //     window.location.href="/login/"
+                       }else if(data1=="paypasswd_error"){
+                           alert("支付密码错误")
+                       //    window.location.href="/editpasswd/"
+                       }else {
+                           alert(data1)
+                       }
                     }
                 })
-              //  alter("success  2")
             }
 
         </script>

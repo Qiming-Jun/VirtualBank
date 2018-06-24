@@ -33,7 +33,12 @@ urlpatterns = [
     path('userdeposit/', views.userdeposit),
     path('userdraw/', views.userdraw),
     path('viewdrawdeposit/', views.viewdrawdeposit),
-    path('editpasswd/', views.editpasswd)
+    path('editpasswd/', views.editpasswd),
+
+    path('pay', views.pay),
+    path('mall_pay/', views.mall_pay),
+    path('mall_ackpay/', views.mall_pay),
+ #   path('back_mall/', views.back_mall)
   #  path('t1/', views.t1),
 #    path('t2/', views.t2)
 ]

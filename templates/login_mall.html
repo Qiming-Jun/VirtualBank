@@ -6,7 +6,7 @@
 		<meta charset="utf-8">
 		<meta http-equiv="X-UA-Compatible" content="IE=edge">
 		<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-    
+
 		<title>登录</title>
 		<link rel="stylesheet" href="../static/lib/layui/css/layui.css" media="all" />
 		<link rel="stylesheet" href="../static/css/login.css" />
@@ -16,7 +16,7 @@
 	<body class="beg-login-bg" background="../static/images/bg.jpg">
 		<div class="beg-login-box">
 			<header>
-				<h1>欢迎登录</h1>
+				<h1>请登陆银行系统</h1>
 			</header>
 			<div class="beg-login-main">
 				<form class="layui-form" id="transfer_form" onsubmit="return false">
@@ -25,18 +25,18 @@
 						<label class="beg-login-icon">
                         <i class="layui-icon">&#xe612;</i>
                     </label>
-						<select name="usertype"> 
-<option value="ordinaryuser">用户登陆</option> 
-<option value="admin">管理员登陆</option> 
-</select> 
+						<select name="usertype">
+<option value="ordinaryuser">用户登陆</option>
+<option value="admin">管理员登陆</option>
+</select>
 					</div>
                 <!---->
-                
+
 					<div class="layui-form-item">
 						<label class="beg-login-icon">
                         <i class="layui-icon">&#xe612;</i>
                     </label>
-						<input id="id" type="text" name="id" lay-verify="userName" autocomplete="off" placeholder="请输入登录名" class="layui-input">
+						<input id="id" value="{{ mall_id }}" readonly type="text" name="id" lay-verify="userName" autocomplete="off" placeholder="登录名" class="layui-input">
 					</div>
 					<div class="layui-form-item">
 						<label class="beg-login-icon">
@@ -59,7 +59,7 @@
                 <a href="/signup/" class="layui-btn layui-btn-primary">注册</a>
             </div>
 
-            
+
 		</div>
         <script src="../static/lib/layui/layui.js" charset="utf-8"></script>
         <script src="../static/js/x-admin.js"></script>
@@ -87,7 +87,7 @@
                     data: data,
                     success:function (data1) {
                         if(data1=="success"){
-                            window.location.href="/viewuserinf/"
+                            window.location.href="/mall_pay/"
                         }else{
                             alert(data1)
                             console.log(data1)
@@ -107,9 +107,9 @@
 				var layer = layui.layer,
 					$ = layui.jquery,
 					form = layui.form();
-					
+
 				form.on('submit(login)',function(data){
-					
+
 					location.href='index.html';
 					return false;
 				});

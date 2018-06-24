@@ -6,7 +6,14 @@ import pymysql as MySQLdb
 import datetime
 import rsa
 import os
+import json
 import bank.tools as tools
+
+from Crypto.PublicKey import RSA
+from Crypto.Cipher import PKCS1_OAEP
+from Crypto.Signature import PKCS1_v1_5
+from Crypto.Hash import MD5
+import base64
 
 def login_html(request):
     file_path = os.path.abspath(__file__)
@@ -95,12 +102,12 @@ def signup(request):
     if request.method=="GET":
         return render(request, "signup.html")
     if request.method=="POST":
-        name = request.POST.get("name", None)
-        idcard = request.POST.get("idcard", None)
-        phone = request.POST.get("phone", None)
-        email = request.POST.get("email", None)
-        passwd = request.POST.get("passwd", None)
-        paypasswd = request.POST.get("paypasswd", None)
+        name =  request.POST.get("name", None)
+        idcard = tools.DecodeDecrypt(request.POST.get("idcard", None)).decode()
+        phone = tools.DecodeDecrypt(request.POST.get("phone", None)).decode()
+        email = tools.DecodeDecrypt(request.POST.get("email", None)).decode()
+        passwd = tools.DecodeDecrypt(request.POST.get("passwd", None)).decode()
+        paypasswd = tools.DecodeDecrypt(request.POST.get("paypasswd", None)).decode()
         time = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 
         user_inf = Users(uname=name,uidcard=idcard,uphone=phone,uemail=email,
@@ -136,6 +143,8 @@ def edituserinf(request):
          #   name = tools.DecodeDecrypt(request.POST.get("name", None)).encode(encoding="utf-8").decode()
             phone = tools.DecodeDecrypt(request.POST.get("phone", None)).decode()
             email = tools.DecodeDecrypt(request.POST.get("email", None)).decode()
+            if phone=="11":
+                return HttpResponse("test")
           #  print(name, phone, email)
             Users.objects.filter(id=int(id_session)).update(uname="王启明3",uphone=phone,uemail=email)
             return HttpResponse("success")
@@ -390,22 +399,22 @@ def userdeposit(request):
         except:
             return render(request, "login.html")
         uid = request.session["id"]
-      #  try:
-        card = int(tools.DecodeDecrypt(request.POST.get("card",None)))
-        amount = float(tools.DecodeDecrypt(request.POST.get("amount", None)))
-        time = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-        new_balance = CrashCard.objects.get(id=card).balance+amount
-        tmp = DrawDeposit(card=CrashCard.objects.get(id=card),
-                    amount=amount,
-                    type="存款",
-                    balance=new_balance,
-                    time=time
-                    )
-        tmp.save()
-        CrashCard.objects.filter(id=card).update(balance=new_balance)
-        return HttpResponse("操作成功")
- #   except:
-      #      return HttpResponse("存款错误，请检查卡号或金额")
+        try:
+            card = int(tools.DecodeDecrypt(request.POST.get("card",None)))
+            amount = float(tools.DecodeDecrypt(request.POST.get("amount", None)))
+            time = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+            new_balance = CrashCard.objects.get(id=card).balance+amount
+            tmp = DrawDeposit(card=CrashCard.objects.get(id=card),
+                        amount=amount,
+                        type="存款",
+                        balance=new_balance,
+                        time=time
+                        )
+            tmp.save()
+            CrashCard.objects.filter(id=card).update(balance=new_balance)
+            return HttpResponse("success")
+        except:
+            return HttpResponse("存款错误，请检查卡号或金额")
     return render(request, "login.html")
 
 def userdraw(request):
@@ -474,6 +483,85 @@ def viewdrawdeposit(request):
         return render(request,"viewdrawdeposit.html",{"drawdeposit_list":tmp})
     else:
         return render(request, "login.html")
+
+def pay(request):
+    if request.method=="GET":
+        ds = request.GET.get("ds",None)
+
+        if tools.SignVerify(ds):
+            pay_inf = json.loads(tools.GetPayInf(ds))
+            print(pay_inf["target"],pay_inf["source"],pay_inf["amount"])
+
+        #    request.session.clear()
+        #    request.session["mall_status"] = "being"
+        #    request.session["mall_id"] = int(pay_inf["source"])
+        #    request.session["mall_card"] = int(pay_inf["target"])
+            request.session["mall_card"] = float(pay_inf["amount"])
+
+            request.session.clear()
+            request.session["mall_status"] = "being"
+            request.session["mall_id"] = 100013
+            request.session["mall_card"] = 6100005
+            request.session["mall_amount"] = 10
+
+            return render(request,"login_mall.html",{"mall_id":request.session["mall_id"]})
+
+        return render(request,"returnjson.html",{"jsoninf":data})
+
+def mall_pay(request):
+    if request.method=="GET":
+      #  try:
+        status = request.session["mall_status"]
+        uid = request.session["mall_id"]
+        card = request.session["mall_card"]
+        amount = request.session["mall_amount"]
+        print(uid)
+        tmp = CrashCard.objects.filter(user=Users.objects.get(id=uid))
+        return render(request, "mall_pay.html", {"mall_card_list":tmp,"mall_amount":amount})
+       # except:
+       #     return render(request,"inf.html",{"inf":"系统错误，订单支付失败！"})
+
+    elif request.method=="POST":
+        try:
+            status = request.session["mall_status"]
+            uid = request.session["mall_id"]
+            dcard = request.session["mall_card"]
+            scard = tools.DecodeDecrypt(request.POST.get("card",None))
+            paypasswd_html = tools.DecodeDecrypt(request.POST.get("paypasswd",None)).decode()
+            paypasswd_sql = Users.objects.get(id=uid).paypasswd
+
+            print(paypasswd_html)
+            print(tools.Digest(uid,paypasswd_html),paypasswd_sql)
+
+            if tools.Digest(uid,paypasswd_html) != paypasswd_sql:
+                return HttpResponse("paypasswd_error")
+
+            amount = request.session["mall_amount"]
+            time = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+            scbalance = CrashCard.objects.get(id=scard).balance
+            dcbalance = CrashCard.objects.get(id=dcard).balance
+
+            if scbalance < amount:
+                return HttpResponse("amount_error")
+            print("error 01")
+
+            tmp1 = Transfer(time=time,
+                            scard=CrashCard.objects.get(id=scard),
+                            dcard=CrashCard.objects.get(id=dcard),
+                            suser=Users.objects.get(id=uid),
+                            duser=Users.objects.get(id=CrashCard.objects.get(id=dcard).user.id),
+                            amount=amount,
+                            scbalance=CrashCard.objects.get(id=scard).balance - amount,
+                            dcbalance=CrashCard.objects.get(id=dcard).balance + amount
+                            )
+            print("error 02")
+            CrashCard.objects.filter(id=scard).update(balance=scbalance - amount)
+            CrashCard.objects.filter(id=dcard).update(balance=dcbalance + amount)
+            tmp1.save()
+
+            return HttpResponse("success")
+        except:
+            return HttpResponse("系统出错")
 
 
 
