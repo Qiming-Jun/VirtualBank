@@ -51,22 +51,26 @@ def login(request):
 
 def login(request):
     if request.method=="GET":
+        request.session.clear()
         return render(request, "login.html")
 
     if request.method=="POST":
         id = int(tools.DecodeDecrypt(request.POST.get("id", None)).decode())
         passwd = tools.DecodeDecrypt(request.POST.get("passwd", None)).decode()
-        print(type(id), id, type(passwd), passwd)
+        print(type(id), id, type(passwd), passwd,tools.DecodeDecrypt(request.POST.get("passwd", None)))
 
         try:
             tmp = Users.objects.get(id=id)
             print(type(passwd), type(tmp.upasswd))
-            if tmp.upasswd==passwd:
+       #     if tmp.upasswd==passwd:
+            if tmp.upasswd==tools.Digest(id,passwd):
                 print("success!")
                 request.session['id'] = id
                 request.session['name'] = tmp.uname
 
                 return HttpResponse("success")
+            else:
+                return HttpResponse("密码错误或用户名不存在!")
         except:
             return HttpResponse("密码错误或用户名不存在!")
             print("密码错误或用户名不存在!")
@@ -101,10 +105,14 @@ def signup(request):
 
         user_inf = Users(uname=name,uidcard=idcard,uphone=phone,uemail=email,
                          upasswd=passwd,paypasswd=paypasswd,time=time)
+        print("id, name ", user_inf.id, name)
         user_inf.save()
 
-        print("id, name ", user_inf.id, name)
-       # return render(request, "login.html")
+        passwd_dig = tools .Digest(user_inf.id,passwd)
+        paypasswd_dig = tools.Digest(user_inf.id, paypasswd)
+        Users.objects.filter(id=user_inf.id).update(upasswd=passwd_dig,paypasswd=paypasswd_dig)
+
+
         inf = "注册成功，id为 "+str(user_inf.id)
         return HttpResponse(inf)
 
@@ -122,19 +130,51 @@ def edituserinf(request):
     if request.method=="POST":
         try:
             id_session = request.session["id"]
-
-            name = request.POST.get("name", None)
-            idcard = request.POST.get("idcard", None)
-            phone = request.POST.get("phone", None)
-            email = request.POST.get("email", None)
-            Users.objects.filter(id=int(id_session)).update(uname=name,uphone=phone,uemail=email)
-
-            tmp = Users.objects.get(id=int(id_session))
-            return render(request, "user_inf_show.html", {"inf": tmp})
-
         except:
-            print("error 1: 登陆状态出错，请重新登陆")
+            return HttpResponse("login")
+        try:
+         #   name = tools.DecodeDecrypt(request.POST.get("name", None)).encode(encoding="utf-8").decode()
+            phone = tools.DecodeDecrypt(request.POST.get("phone", None)).decode()
+            email = tools.DecodeDecrypt(request.POST.get("email", None)).decode()
+          #  print(name, phone, email)
+            Users.objects.filter(id=int(id_session)).update(uname="王启明3",uphone=phone,uemail=email)
+            return HttpResponse("success")
+        except:
+            return HttpResponse("无法修改")
     return render(request, "login.html")
+
+def editpasswd(request):
+    try:
+        uid = request.session["id"]
+    except:
+        return render(request, "login.html")
+
+    if request.method=="GET":
+        return render(request, "editpasswd.html")
+
+    elif request.method=="POST":
+        uid = request.session["id"]
+        option = tools.DecodeDecrypt(request.POST.get("option", None)).decode()
+        old_passwd = tools.DecodeDecrypt(request.POST.get("old_passwd", None)).decode()
+        new_passwd = tools.DecodeDecrypt(request.POST.get("new_passwd", None)).decode()
+        try:
+            if option=="upasswd":
+                upasswd = Users.objects.get(id=uid).upasswd
+                if tools.Digest(uid,old_passwd)==upasswd:
+                    Users.objects.filter(id=uid).update(upasswd=tools.Digest(uid,new_passwd))
+                    return HttpResponse("success_upasswd")
+                else:
+                    return HttpResponse("原始密码错误，重新输入！")
+            else:
+                paypasswd = Users.objects.get(id=uid).paypasswd
+                if tools.Digest(uid,old_passwd)==paypasswd:
+                    Users.objects.filter(id=uid).update(paypasswd=tools.Digest(uid,new_passwd))
+                    return HttpResponse("success_paypasswd")
+                else:
+                    return HttpResponse("原始密码错误，重新输入！")
+        except:
+            return HttpResponse("系统错误，未完成修改")
+        return HttpResponse("系统错误，未完成修改")
 
 def cardmanage(request):
     if request.method=="GET":
@@ -173,8 +213,9 @@ def addcard(request):
             paypasswd_sql = Users.objects.get(id=id_session).paypasswd
             print(request.POST.get("paypasswd"))
             paypasswd_html = tools.DecodeDecrypt(request.POST.get("paypasswd")).decode()
+            print(paypasswd_html,tools.Digest(id_session, paypasswd_html), paypasswd_sql)
 
-            if paypasswd_html==paypasswd_sql:
+            if tools.Digest(id_session,paypasswd_html)==paypasswd_sql:
                 time = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
                 tmp = CrashCard(user=Users.objects.get(id=id_session),time=time)
                 tmp.save()
@@ -272,7 +313,7 @@ def transfer(request):
         paypasswd_html = tools.DecodeDecrypt(request.POST.get("paypasswd", None)).decode()
         paypasswd_sql = Users.objects.get(id=uid).paypasswd
         print("paypasswd：", paypasswd_html, paypasswd_sql)
-        if paypasswd_sql!=paypasswd_html:
+        if paypasswd_sql != tools.Digest(uid,paypasswd_html):
             #return render(requset,"inf.html",{"inf":("支付密码错误",)})
             return HttpResponse("支付密码错误！")
         try:
@@ -350,8 +391,8 @@ def userdeposit(request):
             return render(request, "login.html")
         uid = request.session["id"]
       #  try:
-        card = int(request.POST.get("card",None))
-        amount = float(request.POST.get("amount", None))
+        card = int(tools.DecodeDecrypt(request.POST.get("card",None)))
+        amount = float(tools.DecodeDecrypt(request.POST.get("amount", None)))
         time = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
         new_balance = CrashCard.objects.get(id=card).balance+amount
         tmp = DrawDeposit(card=CrashCard.objects.get(id=card),
@@ -387,7 +428,7 @@ def userdraw(request):
         paypasswd_html = tools.DecodeDecrypt(request.POST.get("paypasswd", None)).decode()
         paypasswd_sql = Users.objects.get(id=uid).paypasswd
         print("paypasswd：", paypasswd_html, paypasswd_sql)
-        if paypasswd_sql != paypasswd_html:
+        if paypasswd_sql != tools.Digest(uid,paypasswd_html):
             return HttpResponse("支付密码错误")
 
         card = int(tools.DecodeDecrypt(request.POST.get("card", None)))

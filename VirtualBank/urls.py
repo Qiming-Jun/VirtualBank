@@ -32,7 +32,8 @@ urlpatterns = [
     path('viewtransfer/', views.viewtransfer),
     path('userdeposit/', views.userdeposit),
     path('userdraw/', views.userdraw),
-    path('viewdrawdeposit/', views.viewdrawdeposit)
+    path('viewdrawdeposit/', views.viewdrawdeposit),
+    path('editpasswd/', views.editpasswd)
   #  path('t1/', views.t1),
 #    path('t2/', views.t2)
 ]

@@ -25,53 +25,68 @@
             {% include "./inc/left.html" %}
             <div class="layui-tab layui-tab-card site-demo-title x-main" lay-filter="x-tab" lay-allowclose="true"
                 style="padding: 3% 0% 0% 3%">
-            <form class="layui-form layui-form-pane" action="/edituserinf/" method="POST" name="myform"
-                  onsubmit="return checkForm()">
+            <form class="layui-form layui-form-pane" onsubmit="return false" >
                 <div class="layui-form-item">
-                    <label for="L_title" class="layui-form-label">
-                        姓名
-                  </label>
-                    <div class="layui-input-block">
-                        <input type="text" id="L_title" name="name" required lay-verify="title"
-                        autocomplete="off" class="layui-input">
-                    </div>
+
                     <label for="L_title" class="layui-form-label">
                         手机号
                     </label>
                     <div class="layui-input-block">
-                        <input type="text" id="L_title" name="phone" required lay-verify="title"
+                        <input type="text" id="phone" name="phone" required lay-verify="title"
                         autocomplete="off" class="layui-input">
                     </div>
                     <label for="L_title" class="layui-form-label">
                         电子邮箱
                     </label>
                     <div class="layui-input-block">
-                        <input type="text" id="L_title" name="email" required lay-verify="title"
-                        autocomplete="off" class="layui-input">
-                    </div>
-                    <div class="layui-input-block">
-                        <input type="text" id="L_title" name="paypasswd" required lay-verify="title"
+                        <input type="text" id="email" name="email" required lay-verify="title"
                         autocomplete="off" class="layui-input">
                     </div>
                     <div class="layui-form-item">
-                        <input class="layui-btn" type="submit" value="确认修改">
+                        <button class="layui-btn" onclick="checkForm()">
+                            确认修改
+                        </button>
                     </div>
                 </div>
             </form>
             </div>
         </div>
 
-      <script>
-          function checkForm()
-            {
-              var name=document.forms["myform"]["name"].value;
-              if (name==null || name=="11")
-              {
-                alert("name输入为11");
-                return false;
-              }
+      <script src="../static/jiawe_js/jsencrypt.js"></script>
+        <script>
+            function checkForm() {
+                alert("success");
+                var cert=document.getElementById("cert").value;
+                var certInfo=JSON.parse(cert).info.certInfo
+                var pubKey=JSON.parse(certInfo).PublicKey
+
+                var encrypt = new JSEncrypt();
+                encrypt.setPublicKey(pubKey);
+
+                var data={
+                    name:encrypt.encrypt($('#name').val(), true),
+                    phone:encrypt.encrypt($('#phone').val(), true),
+                    email:encrypt.encrypt($('#email').val(), true)
+                };
+                $.ajax({
+                    url:"/edituserinf/",
+                    type:"POST",
+                    data: data,
+                    success:function (data1) {
+                       if(data1=="success"){
+                            window.location.href="/viewuserinf/"
+                       }else if(data1=="login"){
+                           window.location.href="/login/"
+                       }
+                       else{
+                           alert(data1)
+                           window.location.href="/edituserinf/"
+                       }
+                    }
+                })
             }
-      </script>
+
+        </script>
 <!--
         <script src="../static/lib/layui/layui.js" charset="utf-8">
         </script>

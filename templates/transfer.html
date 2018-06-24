@@ -49,7 +49,7 @@
                         <span class="x-red">*</span>对方卡号
                     </label>
                     <div class="layui-input-inline">
-                        <input type="text" id="dcard" name="dcard" required lay-verify="required"
+                        <input type="text" id="dsssscard" name="dcard" required lay-verify="required"
                         autocomplete="off" class="layui-input">
                     </div>
                 </div>
@@ -79,7 +79,6 @@
                     <button  class="layui-btn" onclick="formAck()">
                         确认转账
                     </button>
-                    <input class="layui-btn" type="submit" value="确认转账">
                 </div>
             </form>
         </div>
@@ -99,7 +98,7 @@
                 var data={
                     id:encrypt.encrypt($('#id').val(), true),
                     scard:encrypt.encrypt($('#scard').val(), true),
-                    dcard:encrypt.encrypt($('#dcard').val(), true),
+                    dcard:encrypt.encrypt($('#dsssscard').val(), true),
                     amount:encrypt.encrypt($('#amount').val(), true),
                     paypasswd:encrypt.encrypt($('#paypasswd').val(), true)
                 };

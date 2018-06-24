@@ -26,33 +26,47 @@
             <form class="layui-form" id="transfer_form"  onsubmit="return false">
 
         <!--    <form class="layui-form" id="transfer_form" action="/transfer/" method="post">  -->
-
                 <div class="layui-form-item">
                     <label for="link" class="layui-form-label">
-                        <span class="x-red">*</span>存款卡号
+                        <span class="x-red">*</span>选择操作
                     </label>
                     <div class="layui-input-inline">
-                        <input type="text" id="card" name="card" required lay-verify="required"
+                        <select lay-verify="required" id="option" name="option">
+                                <option>
+                                </option>
+                                <optgroup label="选择要修改的密码">
+                                    <option value="upasswd">登陆密码</option>
+                                    <option value="paypasswd">支付密码</option>
+                                </optgroup>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="layui-form-item">
+                    <label for="desc" class="layui-form-label">
+                        <span class="x-red">*</span>原密码
+                    </label>
+                    <div class="layui-input-inline">
+                        <input type="password" id="old_passwd" name="old_passwd" required lay-verify="required"
                         autocomplete="off" class="layui-input">
                     </div>
                 </div>
 
                 <div class="layui-form-item">
-                    <label for="link" class="layui-form-label">
-                        <span class="x-red">*</span>转账金额
+                    <label for="desc" class="layui-form-label">
+                        <span class="x-red">*</span>新密码
                     </label>
                     <div class="layui-input-inline">
-                        <input type="text" id="amount" name="amount" required lay-verify="required"
+                        <input type="password" id="new_passwd" name="new_passwd" required lay-verify="required"
                         autocomplete="off" class="layui-input">
                     </div>
                 </div>
-
 
                 <div class="layui-form-item">
                     <label for="L_repass" class="layui-form-label">
                     </label>
                     <button  class="layui-btn" onclick="formAck()">
-                        确认存款
+                        确认修改
                     </button>
                 </div>
             </form>
@@ -62,7 +76,7 @@
         <script src="../static/jiawe_js/jsencrypt.js"></script>
         <script>
             function formAck() {
-             //   alert("success");
+                alert("success");
                 var cert=document.getElementById("cert").value;
                 var certInfo=JSON.parse(cert).info.certInfo
                 var pubKey=JSON.parse(certInfo).PublicKey
@@ -71,19 +85,27 @@
                 encrypt.setPublicKey(pubKey);
 
                 var data={
-                    amount:encrypt.encrypt($('#amount').val(), true),
-                    card:encrypt.encrypt($('#card').val(), true)
+                    option:encrypt.encrypt($('#option').val(), true),
+                    old_passwd:encrypt.encrypt($('#old_passwd').val(), true),
+                    dcard:encrypt.encrypt($('#dcard').val(), true),
+                    new_passwd:encrypt.encrypt($('#new_passwd').val(), true)
                 };
                 $.ajax({
-                    url:"/userdeposit/",
+                    url:"/editpasswd/",
                     type:"POST",
                     data: data,
                     success:function (data1) {
-                        alert(data1)
-                        window.location.href="/viewuserinf/"
+                       if(data1=="success_paypasswd"){
+                            window.location.href="/viewuserinf/"
+                       }else if(data1=="success_upasswd"){
+                           window.location.href="/login/"
+                       }
+                       else{
+                           alert(data1)
+                           window.location.href="/editpasswd/"
+                       }
                     }
                 })
-              //  alter("success  2")
             }
 
         </script>

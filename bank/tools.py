@@ -2,6 +2,7 @@ import pymysql as MySQLdb
 import datetime
 import rsa
 import os
+import hmac
 
 from Crypto.PublicKey import RSA
 from Crypto.Cipher import PKCS1_OAEP
@@ -23,3 +24,7 @@ def DecodeDecrypt(ciphertext):
 
     cipher_rsa_decrypt = PKCS1_OAEP.new(private_key)
     return cipher_rsa_decrypt.decrypt(text_decode)
+
+def Digest(key, msg):
+    h = hmac.new(str(key).encode(), str(msg).encode(), digestmod='MD5')
+    return h.hexdigest()

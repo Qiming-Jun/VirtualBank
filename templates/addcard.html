@@ -50,9 +50,9 @@
                 </div>
             </form>
         </div>
-        <script src="../static/lib/layui/layui.js" charset="utf-8"></script>
-        <script src="../static/js/x-admin.js"></script>
-        <script src="../static/jiawe_js/jsencrypt.js"></script>
+        <script src="../../static/lib/layui/layui.js" charset="utf-8"></script>
+        <script src="../../static/js/x-admin.js"></script>
+        <script src="../../static/jiawe_js/jsencrypt.js"></script>
         <script>
             function addAck() {
                 alert("success");
@@ -66,6 +66,8 @@
                 var data={
                     paypasswd:encrypt.encrypt($('#paypasswd').val(), true)
                 };
+                console.log(data)
+                alert(data)
 
                 $.ajax({
                     url:"/addcard/",
@@ -76,7 +78,7 @@
                             window.location.href="/cardmanage/"
                         }else{
                             alert(data1)
-                            window.location.href="/cardmaange/"
+                            window.location.href="/cardmanage/"
                         }
 
                     }
