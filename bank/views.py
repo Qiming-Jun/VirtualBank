@@ -492,21 +492,21 @@ def pay(request):
             pay_inf = json.loads(tools.GetPayInf(ds))
             print(pay_inf["target"],pay_inf["source"],pay_inf["amount"])
 
+            request.session.clear()
         #    request.session.clear()
         #    request.session["mall_status"] = "being"
-        #    request.session["mall_id"] = int(pay_inf["source"])
-        #    request.session["mall_card"] = int(pay_inf["target"])
-            request.session["mall_card"] = float(pay_inf["amount"])
+            request.session["mall_id"] = int(pay_inf["source"])
+            request.session["mall_card"] = int(pay_inf["target"])
+            request.session["mall_amount"] = float(pay_inf["amount"])
 
-            request.session.clear()
             request.session["mall_status"] = "being"
-            request.session["mall_id"] = 100013
-            request.session["mall_card"] = 6100005
-            request.session["mall_amount"] = 10
+        #    request.session["mall_id"] = 100013
+        #    request.session["mall_card"] = 6100005
+        #    request.session["mall_amount"] = 10
 
             return render(request,"login_mall.html",{"mall_id":request.session["mall_id"]})
 
-        return render(request,"returnjson.html",{"jsoninf":data})
+        return render(request,"inf.html",{"inf":("双签名验证失败",)})
 
 def mall_pay(request):
     if request.method=="GET":
